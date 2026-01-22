@@ -1,72 +1,9 @@
-"""
-인터랙티브 HTML 보고서 생성 모듈
-"""
-import json
-import argparse
-from pathlib import Path
-from typing import Dict, List
-from jinja2 import Template
-
-from .config import OUTPUT_DIR, TEMPLATE_DIR, DATA_DIR
-from .pdf_downloader import download_report
-
-
-class ReportGenerator:
-    """HTML 보고서 생성기"""
-
-    def __init__(self, template_path: Path = None):
-        self.template_path = template_path or (TEMPLATE_DIR / "report_template.html")
-        self.output_dir = OUTPUT_DIR
-        self.output_dir.mkdir(parents=True, exist_ok=True)
-
-    def generate(self, report_data: Dict, pdf_filename: str, output_filename: str = None) -> Path:
-        """
-        HTML 보고서 생성
-
-        Args:
-            report_data: 보고서 데이터
-            pdf_filename: PDF 파일명
-            output_filename: 출력 HTML 파일명
-
-        Returns:
-            생성된 HTML 파일 경로
-        """
-        if output_filename is None:
-            output_filename = "report.html"
-
-        # 템플릿 로드
-        if self.template_path.exists():
-            with open(self.template_path, 'r', encoding='utf-8') as f:
-                template_content = f.read()
-        else:
-            # 기본 템플릿 사용
-            template_content = self._get_default_template()
-
-        template = Template(template_content)
-
-        # HTML 생성
-        html_content = template.render(
-            data=report_data,
-            pdf_filename=pdf_filename,
-            json_data=json.dumps(report_data.get('top_stocks', []))
-        )
-
-        # 파일 저장
-        output_path = self.output_dir / output_filename
-        with open(output_path, 'w', encoding='utf-8') as f:
-            f.write(html_content)
-
-        print(f"[OK] HTML 보고서 생성: {output_path}")
-        return output_path
-
-    def _get_default_template(self) -> str:
-        """기본 템플릿 반환"""
-        return """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ data.title }} - {{ data.subtitle }}</title>
+    <title>우상향 금리, 저평가 실적주가 답 - 실전 퀀트</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -114,8 +51,8 @@ class ReportGenerator:
 <body>
     <div class="header">
         <div class="container">
-            <h1>{{ data.title }}</h1>
-            <div class="meta">{{ data.subtitle }} | {{ data.date }} | {% for analyst in data.analysts %}{{ analyst }}{% if not loop.last %}, {% endif %}{% endfor %}</div>
+            <h1>우상향 금리, 저평가 실적주가 답</h1>
+            <div class="meta">실전 퀀트 | 2026.01.21 | 이경수 (gang@hanafn.com), 이철현 (lch2678@hanafn.com)</div>
         </div>
     </div>
 
@@ -135,17 +72,33 @@ class ReportGenerator:
                     <div class="card">
                         <h3>주요 포인트</h3>
                         <ul>
-                            {% for point in data.summary.key_points %}
-                            <li>{{ point }}</li>
-                            {% endfor %}
+                            
+                            <li>연초 미국 금리 상승 영향으로 글로벌 저평가 및 중형주 강세</li>
+                            
+                            <li>금리 상승 시기에 미국 저평가 및 중소형주 강세 뚜렷</li>
+                            
+                            <li>달러 하락 시기에도 배당모멘텀, 저평가, 중형주 팩터 유리</li>
+                            
+                            <li>코스피는 금리 상승 시기에 유리한 자산 (미국 중소형주와 연동성 높음)</li>
+                            
+                            <li>2월은 배당 상향, 목표주가 변화, 고배당, 저평가, 실적 상향 컨셉 유리</li>
+                            
                         </ul>
                     </div>
                     <div class="card">
                         <h3>투자 전략</h3>
                         <ul>
-                            {% for strategy in data.summary.strategy %}
-                            <li>{{ strategy }}</li>
-                            {% endfor %}
+                            
+                            <li>지주회사: SK, 한화, GS 등</li>
+                            
+                            <li>유틸리티: 한국전력</li>
+                            
+                            <li>산업재: HD현대건설기계, 팬오션, 현대위아</li>
+                            
+                            <li>소재: 한국타이어앤테크놀로지</li>
+                            
+                            <li>금융: 유통, 증권, 은행</li>
+                            
                         </ul>
                     </div>
                 </div>
@@ -165,39 +118,145 @@ class ReportGenerator:
                         </tr>
                     </thead>
                     <tbody>
-                        {% for stock in data.top_stocks %}
+                        
                         <tr>
-                            <td><strong>{{ stock.name }}</strong></td>
-                            <td>{{ stock.per }}</td>
-                            <td>{{ stock.pbr }}</td>
-                            <td class="{% if stock.op_3m > 0 %}positive{% else %}negative{% endif %}">{{ '%+.1f' | format(stock.op_3m) }}</td>
-                            <td>{{ stock.dividend }}</td>
-                            <td class="{% if stock.target_1m > 0 %}positive{% else %}negative{% endif %}">{{ '%+.1f' | format(stock.target_1m) }}</td>
+                            <td><strong>이마트</strong></td>
+                            <td>9.1</td>
+                            <td>0.2</td>
+                            <td class="positive">+6.9</td>
+                            <td>2.7</td>
+                            <td class="positive">+21.0</td>
                         </tr>
-                        {% endfor %}
+                        
+                        <tr>
+                            <td><strong>GS</strong></td>
+                            <td>7.2</td>
+                            <td>0.4</td>
+                            <td class="positive">+7.6</td>
+                            <td>4.4</td>
+                            <td class="positive">+25.9</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>롯데쇼핑</strong></td>
+                            <td>8.5</td>
+                            <td>0.1</td>
+                            <td class="positive">+2.5</td>
+                            <td>5.0</td>
+                            <td class="positive">+17.3</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>iM금융지주</strong></td>
+                            <td>4.6</td>
+                            <td>0.4</td>
+                            <td class="positive">+3.4</td>
+                            <td>4.9</td>
+                            <td class="positive">+26.2</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>팬오션</strong></td>
+                            <td>6.3</td>
+                            <td>0.4</td>
+                            <td class="positive">+2.1</td>
+                            <td>2.9</td>
+                            <td class="positive">+12.5</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>SK</strong></td>
+                            <td>8.4</td>
+                            <td>0.6</td>
+                            <td class="positive">+29.1</td>
+                            <td>2.4</td>
+                            <td class="positive">+32.1</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>BNK금융지주</strong></td>
+                            <td>5.6</td>
+                            <td>0.5</td>
+                            <td class="positive">+3.8</td>
+                            <td>4.8</td>
+                            <td class="positive">+8.9</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>한국타이어앤테크놀로지</strong></td>
+                            <td>6.1</td>
+                            <td>0.7</td>
+                            <td class="positive">+18.4</td>
+                            <td>3.6</td>
+                            <td class="positive">+25.6</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>신세계</strong></td>
+                            <td>11.0</td>
+                            <td>0.6</td>
+                            <td class="positive">+7.3</td>
+                            <td>1.6</td>
+                            <td class="negative">-5.5</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>한국금융지주</strong></td>
+                            <td>5.9</td>
+                            <td>1.1</td>
+                            <td class="positive">+18.4</td>
+                            <td>4.3</td>
+                            <td class="positive">+33.7</td>
+                        </tr>
+                        
                     </tbody>
                 </table>
             </div>
 
             <div id="msci" class="tab-content">
-                <h2 style="margin-bottom: 1.5rem; color: #333;">2월 MSCI KOREA 리뷰 예상 ({{ data.msci_review.date }})</h2>
+                <h2 style="margin-bottom: 1.5rem; color: #333;">2월 MSCI KOREA 리뷰 예상 (2026.02.11)</h2>
                 <h3 style="color: #667eea; margin: 2rem 0 1rem 0;">신규 편입 예상</h3>
                 <div class="msci-grid">
-                    {% for entry in data.msci_review.new_entries %}
+                    
                     <div class="msci-item">
-                        <span><strong>{{ entry.name }}</strong></span>
-                        <span class="badge badge-{% if entry.probability == '높음' %}high{% elif entry.probability == '중간' %}medium{% else %}low{% endif %}">{{ entry.probability }}</span>
+                        <span><strong>삼성에피스홀딩스</strong></span>
+                        <span class="badge badge-high">높음</span>
                     </div>
-                    {% endfor %}
+                    
+                    <div class="msci-item">
+                        <span><strong>현대건설</strong></span>
+                        <span class="badge badge-high">높음</span>
+                    </div>
+                    
+                    <div class="msci-item">
+                        <span><strong>에이비엘바이오</strong></span>
+                        <span class="badge badge-high">높음</span>
+                    </div>
+                    
+                    <div class="msci-item">
+                        <span><strong>레인보우로보틱스</strong></span>
+                        <span class="badge badge-medium">중간</span>
+                    </div>
+                    
+                    <div class="msci-item">
+                        <span><strong>현대오토에버</strong></span>
+                        <span class="badge badge-low">낮음</span>
+                    </div>
+                    
                 </div>
                 <h3 style="color: #e74c3c; margin: 2rem 0 1rem 0;">편출 예상</h3>
                 <div class="msci-grid">
-                    {% for removal in data.msci_review.removals %}
+                    
                     <div class="msci-item" style="border-left-color: #e74c3c;">
-                        <span><strong>{{ removal.name }}</strong></span>
-                        <span class="badge badge-{% if removal.probability == '높음' %}high{% else %}medium{% endif %}">{{ removal.probability }}</span>
+                        <span><strong>LG생활건강</strong></span>
+                        <span class="badge badge-high">높음</span>
                     </div>
-                    {% endfor %}
+                    
+                    <div class="msci-item" style="border-left-color: #e74c3c;">
+                        <span><strong>코웨이</strong></span>
+                        <span class="badge badge-high">높음</span>
+                    </div>
+                    
                 </div>
             </div>
 
@@ -209,7 +268,7 @@ class ReportGenerator:
 
             <div id="pdf" class="tab-content">
                 <h2 style="margin-bottom: 1.5rem; color: #333;">전체 보고서</h2>
-                <div class="pdf-viewer"><iframe src="{{ pdf_filename }}"></iframe></div>
+                <div class="pdf-viewer"><iframe src="EDIT_Quant_Weekly_260121.pdf"></iframe></div>
             </div>
         </div>
     </div>
@@ -234,7 +293,7 @@ class ReportGenerator:
             evt.currentTarget.classList.add("active");
         }
 
-        const stockData = {{ json_data | safe }};
+        const stockData = [{"name": "\uc774\ub9c8\ud2b8", "per": 9.1, "pbr": 0.2, "op_3m": 6.9, "dividend": 2.7, "target_1m": 21.0}, {"name": "GS", "per": 7.2, "pbr": 0.4, "op_3m": 7.6, "dividend": 4.4, "target_1m": 25.9}, {"name": "\ub86f\ub370\uc1fc\ud551", "per": 8.5, "pbr": 0.1, "op_3m": 2.5, "dividend": 5.0, "target_1m": 17.3}, {"name": "iM\uae08\uc735\uc9c0\uc8fc", "per": 4.6, "pbr": 0.4, "op_3m": 3.4, "dividend": 4.9, "target_1m": 26.2}, {"name": "\ud32c\uc624\uc158", "per": 6.3, "pbr": 0.4, "op_3m": 2.1, "dividend": 2.9, "target_1m": 12.5}, {"name": "SK", "per": 8.4, "pbr": 0.6, "op_3m": 29.1, "dividend": 2.4, "target_1m": 32.1}, {"name": "BNK\uae08\uc735\uc9c0\uc8fc", "per": 5.6, "pbr": 0.5, "op_3m": 3.8, "dividend": 4.8, "target_1m": 8.9}, {"name": "\ud55c\uad6d\ud0c0\uc774\uc5b4\uc564\ud14c\ud06c\ub180\ub85c\uc9c0", "per": 6.1, "pbr": 0.7, "op_3m": 18.4, "dividend": 3.6, "target_1m": 25.6}, {"name": "\uc2e0\uc138\uacc4", "per": 11.0, "pbr": 0.6, "op_3m": 7.3, "dividend": 1.6, "target_1m": -5.5}, {"name": "\ud55c\uad6d\uae08\uc735\uc9c0\uc8fc", "per": 5.9, "pbr": 1.1, "op_3m": 18.4, "dividend": 4.3, "target_1m": 33.7}];
 
         const perCtx = document.getElementById('perChart').getContext('2d');
         new Chart(perCtx, {
@@ -285,95 +344,4 @@ class ReportGenerator:
         });
     </script>
 </body>
-</html>"""
-
-
-def generate_hanaw_report(url: str = None, output_filename: str = "hanaw_report.html"):
-    """
-    하나증권 Quant Weekly 보고서 생성
-
-    Args:
-        url: PDF URL (기본값: 최신 보고서)
-        output_filename: 출력 파일명
-    """
-    if url is None:
-        url = "https://www.hanaw.com/download/research/FileServer/WEB/strategy/market/2026/01/20/EDIT_Quant_Weekly_260121.pdf"
-
-    # PDF 다운로드
-    pdf_path, pages_data = download_report(url, DATA_DIR)
-
-    # 보고서 데이터 구성
-    report_data = {
-        "title": "우상향 금리, 저평가 실적주가 답",
-        "subtitle": "실전 퀀트",
-        "date": "2026.01.21",
-        "analysts": ["이경수 (gang@hanafn.com)", "이철현 (lch2678@hanafn.com)"],
-        "summary": {
-            "key_points": [
-                "연초 미국 금리 상승 영향으로 글로벌 저평가 및 중형주 강세",
-                "금리 상승 시기에 미국 저평가 및 중소형주 강세 뚜렷",
-                "달러 하락 시기에도 배당모멘텀, 저평가, 중형주 팩터 유리",
-                "코스피는 금리 상승 시기에 유리한 자산 (미국 중소형주와 연동성 높음)",
-                "2월은 배당 상향, 목표주가 변화, 고배당, 저평가, 실적 상향 컨셉 유리"
-            ],
-            "strategy": [
-                "지주회사: SK, 한화, GS 등",
-                "유틸리티: 한국전력",
-                "산업재: HD현대건설기계, 팬오션, 현대위아",
-                "소재: 한국타이어앤테크놀로지",
-                "금융: 유통, 증권, 은행"
-            ]
-        },
-        "msci_review": {
-            "date": "2026.02.11",
-            "new_entries": [
-                {"name": "삼성에피스홀딩스", "probability": "높음"},
-                {"name": "현대건설", "probability": "높음"},
-                {"name": "에이비엘바이오", "probability": "높음"},
-                {"name": "레인보우로보틱스", "probability": "중간"},
-                {"name": "현대오토에버", "probability": "낮음"}
-            ],
-            "removals": [
-                {"name": "LG생활건강", "probability": "높음"},
-                {"name": "코웨이", "probability": "높음"}
-            ]
-        },
-        "top_stocks": [
-            {"name": "이마트", "per": 9.1, "pbr": 0.2, "op_3m": 6.9, "dividend": 2.7, "target_1m": 21.0},
-            {"name": "GS", "per": 7.2, "pbr": 0.4, "op_3m": 7.6, "dividend": 4.4, "target_1m": 25.9},
-            {"name": "롯데쇼핑", "per": 8.5, "pbr": 0.1, "op_3m": 2.5, "dividend": 5.0, "target_1m": 17.3},
-            {"name": "iM금융지주", "per": 4.6, "pbr": 0.4, "op_3m": 3.4, "dividend": 4.9, "target_1m": 26.2},
-            {"name": "팬오션", "per": 6.3, "pbr": 0.4, "op_3m": 2.1, "dividend": 2.9, "target_1m": 12.5},
-            {"name": "SK", "per": 8.4, "pbr": 0.6, "op_3m": 29.1, "dividend": 2.4, "target_1m": 32.1},
-            {"name": "BNK금융지주", "per": 5.6, "pbr": 0.5, "op_3m": 3.8, "dividend": 4.8, "target_1m": 8.9},
-            {"name": "한국타이어앤테크놀로지", "per": 6.1, "pbr": 0.7, "op_3m": 18.4, "dividend": 3.6, "target_1m": 25.6},
-            {"name": "신세계", "per": 11.0, "pbr": 0.6, "op_3m": 7.3, "dividend": 1.6, "target_1m": -5.5},
-            {"name": "한국금융지주", "per": 5.9, "pbr": 1.1, "op_3m": 18.4, "dividend": 4.3, "target_1m": 33.7}
-        ]
-    }
-
-    # HTML 생성
-    generator = ReportGenerator()
-    html_path = generator.generate(report_data, pdf_path.name, output_filename)
-
-    return html_path
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="AI Report - 인터랙티브 금융 보고서 생성기")
-    parser.add_argument("--url", type=str, help="PDF URL")
-    parser.add_argument("--output", type=str, default="report.html", help="출력 파일명")
-
-    args = parser.parse_args()
-
-    if args.url:
-        print(f"[*] URL에서 보고서 생성: {args.url}")
-        # 커스텀 URL 처리 (현재는 하나증권만 지원)
-        html_path = generate_hanaw_report(args.url, args.output)
-    else:
-        # 기본 하나증권 보고서
-        html_path = generate_hanaw_report(output_filename=args.output)
-
-    print(f"\n[OK] 완료!")
-    print(f"[*] HTML 보고서: {html_path}")
-    print(f"[*] 브라우저에서 열어보세요.")
+</html>

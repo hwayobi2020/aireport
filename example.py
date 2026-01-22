@@ -14,6 +14,6 @@ if __name__ == "__main__":
         output_filename="hanaw_quant_weekly.html"
     )
 
-    print(f"\n✓ 보고서가 생성되었습니다!")
+    print(f"\n[OK] 보고서가 생성되었습니다!")
     print(f"  파일 위치: {html_path}")
     print(f"\n브라우저에서 열어보세요.")
