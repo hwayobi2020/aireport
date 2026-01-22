@@ -356,6 +356,12 @@ def generate_hanaw_report(url: str = None, output_filename: str = "hanaw_report.
     generator = ReportGenerator()
     html_path = generator.generate(report_data, pdf_path.name, output_filename)
 
+    # PDF를 output 폴더로 복사 (HTML과 같은 위치에)
+    import shutil
+    output_pdf_path = OUTPUT_DIR / pdf_path.name
+    shutil.copy2(pdf_path, output_pdf_path)
+    print(f"[OK] PDF 복사: {output_pdf_path}")
+
     return html_path
 
 
